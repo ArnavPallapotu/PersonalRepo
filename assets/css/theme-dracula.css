@@ -1,0 +1,89 @@
+body.theme-dracula {
+	background: #222 !important;
+	color: #f8f8f2 !important;
+}
+/* Dracula Theme */
+body.theme-dracula .language-python + .language-plaintext {
+	border-left: 1px solid grey;
+	margin-left: 1rem !important;
+}
+body.theme-dracula [class^=language-]:not(.language-plaintext) pre,
+body.theme-dracula [class^=language-]:not(.language-plaintext) code {
+	background-color: #323443 !important;
+	color: #f8f8f2;
+}
+body.theme-dracula .language-python + .language-plaintext code {
+	background-color: none !important;
+}
+body.theme-dracula .language-python + .language-plaintext pre {
+	background-color: #323443 !important;
+}
+body.theme-dracula .input_area pre, body.theme-dracula .input_area div {
+	margin-bottom: 1rem !important;
+	margin-top: 1.5rem !important;
+	padding-bottom: 0 !important;
+	padding-top: 0 !important;
+	background: #323443 !important;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	font-family: Menlo, Monaco, Consolas, "Lucida Console", Roboto, Ubuntu, monospace;
+	border-radius: 5px;
+	font-size: 105%;
+}
+body.theme-dracula .output_area pre, body.theme-dracula .output_area div {
+	margin-bottom: 1rem !important;
+	margin-top: 0rem !important;
+	padding-bottom: 0 !important;
+	padding-top: 0 !important;
+}
+body.theme-dracula .input_area pre {
+	border-left: 1px solid lightcoral;
+}
+body.theme-dracula .output_area pre {
+	border-left: 1px solid grey;
+	margin-left: 1rem !important;
+	font-size: 16px;
+}
+body.theme-dracula .code_cell table {
+	width: auto;
+}
+body.theme-dracula .highlight {
+	background: #323443 !important;
+	color: #f8f8f2 !important;
+}
+body.theme-dracula .highlight pre, body.theme-dracula .highlight code {
+	background: #323443;
+	color: #f8f8f2;
+	font-size: 110%;
+}
+body.theme-dracula .highlight .hll,
+body.theme-dracula .highlight .s,
+body.theme-dracula .highlight .sa,
+body.theme-dracula .highlight .sb,
+
+body.theme-dracula .highlight .dl,
+body.theme-dracula .highlight .sd,
+body.theme-dracula .highlight .s2,
+body.theme-dracula .highlight .se,
+body.theme-dracula .highlight .sh,
+body.theme-dracula .highlight .si,
+body.theme-dracula .highlight .sx,
+body.theme-dracula .highlight .sr,
+body.theme-dracula .highlight .s1,
+body.theme-dracula .highlight .ss {
+	color: rgb(231, 153, 122);
+}
+body.theme-dracula .highlight .go {
+	color: #44475a;
+}
+body.theme-dracula .highlight .err,
+body.theme-dracula .highlight .g,
+body.theme-dracula .highlight .l,
+body.theme-dracula .highlight .n,
+body.theme-dracula .highlight .x,
+body.theme-dracula .highlight .ge,
+body.theme-dracula .highlight .gr,
+body.theme-dracula .highlight .gh,
+body.theme-dracula .highlight .gi {
+  color: #f8f8f2;
+}

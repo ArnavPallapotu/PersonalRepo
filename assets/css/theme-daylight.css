@@ -1,0 +1,85 @@
+body.theme-daylight {
+	background: #f5f5f5 !important;
+	color: #222 !important;
+}
+/* Daylight Theme */
+body.theme-daylight .highlight table td {
+	padding: 5px;
+}
+body.theme-daylight .highlight table pre {
+	margin: 0;
+}
+body.theme-daylight .highlight .cm {
+	color: #999988;
+	font-style: italic;
+}
+body.theme-daylight .highlight .cp {
+	color: #999999;
+	font-weight: bold;
+}
+body.theme-daylight .highlight .c1 {
+	color: #999988;
+	font-style: italic;
+}
+body.theme-daylight .highlight .cs {
+	color: #999999;
+	font-weight: bold;
+	font-style: italic;
+}
+body.theme-daylight .highlight .c, body.theme-daylight .highlight .ch, body.theme-daylight .highlight .cd, body.theme-daylight .highlight .cpf {
+	color: #999988;
+	font-style: italic;
+}
+body.theme-daylight .highlight .err {
+	color: #a61717;
+	background-color: #e3d2d2;
+}
+body.theme-daylight .highlight .gd {
+	color: #000000;
+	background-color: #ffdddd;
+}
+body.theme-daylight .highlight .ge {
+	color: #000000;
+	font-style: italic;
+}
+body.theme-daylight .highlight .gr {
+	color: #aa0000;
+}
+body.theme-daylight .highlight .gh {
+	color: #999999;
+}
+body.theme-daylight .highlight .gi {
+	color: #000000;
+	background-color: #ddffdd;
+}
+body.theme-daylight .highlight .go {
+	color: #888888;
+}
+body.theme-daylight .highlight .gp {
+	color: #555555;
+}
+body.theme-daylight .highlight .gs {
+	font-weight: bold;
+}
+body.theme-daylight .highlight .gu {
+	color: #aaaaaa;
+}
+body.theme-daylight .highlight .gt {
+	color: #aa0000;
+}
+body.theme-daylight .highlight .kc {
+	color: #000000;
+	font-weight: bold;
+}
+body.theme-daylight .highlight .kd {
+	color: #000000;
+	font-weight: bold;
+}
+body.theme-daylight .highlight .kn {
+	color: #000000;
+	font-weight: bold;
+}
+body.theme-daylight .highlight .kp {
+	color: #000000;
+	font-weight: bold;
+}

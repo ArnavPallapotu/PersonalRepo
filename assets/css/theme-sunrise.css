@@ -1,0 +1,81 @@
+body.theme-sunrise {
+	background: #fbf1c7 !important;
+	color: #282828 !important;
+}
+/* Sunrise Theme */
+body.theme-sunrise .highlight table td {
+	padding: 5px;
+}
+body.theme-sunrise .highlight table pre {
+	margin: 0;
+}
+body.theme-sunrise .highlight, body.theme-sunrise .highlight .w {
+	color: #282828;
+	background-color: #fbf1c7;
+}
+body.theme-sunrise .highlight .err {
+	color: #9d0006;
+	background-color: #be9b11;
+	font-weight: bold;
+}
+body.theme-sunrise .highlight .c, body.theme-sunrise .highlight .ch, body.theme-sunrise .highlight .cd, body.theme-sunrise .highlight .cm, body.theme-sunrise .highlight .cpf, body.theme-sunrise .highlight .c1, body.theme-sunrise .highlight .cs {
+	color: #928374;
+	font-style: italic;
+}
+body.theme-sunrise .highlight .nt {
+	color: #9d0006;
+}
+body.theme-sunrise .highlight .o, body.theme-sunrise .highlight .ow {
+	color: #282828;
+}
+body.theme-sunrise .highlight .p, body.theme-sunrise .highlight .pi {
+	color: #282828;
+}
+body.theme-sunrise .highlight .gi {
+	color: #79740e;
+	background-color: #fbf1c7;
+}
+body.theme-sunrise .highlight .gd {
+	color: #9d0006;
+	background-color: #fbf1c7;
+}
+body.theme-sunrise .highlight .gh {
+	color: #79740e;
+	font-weight: bold;
+}
+body.theme-sunrise .highlight .k, body.theme-sunrise .highlight .kn, body.theme-sunrise .highlight .kp, body.theme-sunrise .highlight .kr, body.theme-sunrise .highlight .kv {
+	color: #9d0006;
+}
+body.theme-sunrise .highlight .kc {
+	color: #8f3f71;
+}
+body.theme-sunrise .highlight .kt {
+	color: #b57614;
+}
+body.theme-sunrise .highlight .kd {
+	color: #af3a03;
+}
+body.theme-sunrise .highlight .s, body.theme-sunrise .highlight .sa, body.theme-sunrise .highlight .sb, body.theme-sunrise .highlight .sc, body.theme-sunrise .highlight .dl, body.theme-sunrise .highlight .sd, body.theme-sunrise .highlight .s2, body.theme-sunrise .highlight .sh, body.theme-sunrise .highlight .sx, body.theme-sunrise .highlight .s1 {
+	color: #79740e;
+	font-style: italic;
+}
+body.theme-sunrise .highlight .si {
+	color: #79740e;
+	font-style: italic;
+}
+body.theme-sunrise .highlight .sr {
+	color: #79740e;
+	font-style: italic;
+}
+body.theme-sunrise .highlight .se {
+	color: #af3a03;
+}
+body.theme-sunrise .highlight .nn {
+	color: #427b58;
+}
+body.theme-sunrise .highlight .nc {
+	color: #427b58;
+}
+body.theme-sunrise .highlight .no {
+	color: #8f3f71;
+}

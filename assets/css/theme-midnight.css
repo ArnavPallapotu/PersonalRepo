@@ -1,0 +1,81 @@
+body.theme-midnight {
+	background: #181825 !important;
+	color: #e0e0e0 !important;
+}
+/* Midnight Theme */
+body.theme-midnight .highlight table td {
+	padding: 5px;
+}
+body.theme-midnight .highlight table pre {
+	margin: 0;
+}
+body.theme-midnight .highlight .c, body.theme-midnight .highlight .ch, body.theme-midnight .highlight .cd, body.theme-midnight .highlight .cpf {
+	color: #75715e;
+	font-style: italic;
+}
+body.theme-midnight .highlight .cm {
+	color: #75715e;
+	font-style: italic;
+}
+body.theme-midnight .highlight .c1 {
+	color: #75715e;
+	font-style: italic;
+}
+body.theme-midnight .highlight .cp {
+	color: #75715e;
+	font-weight: bold;
+}
+
+body.theme-midnight .highlight .err {
+	color: #960050;
+	background-color: #1e0010;
+}
+body.theme-midnight .highlight .gi {
+	color: #ffffff;
+	background-color: #324932;
+}
+body.theme-midnight .highlight .gd {
+	color: #ffffff;
+	background-color: #493131;
+}
+body.theme-midnight .highlight .ge {
+	color: #000000;
+	font-style: italic;
+}
+body.theme-midnight .highlight .gr {
+	color: #aa0000;
+}
+body.theme-midnight .highlight .gt {
+	color: #aa0000;
+}
+body.theme-midnight .highlight .gh {
+	color: #999999;
+}
+body.theme-midnight .highlight .go {
+	color: #888888;
+}
+body.theme-midnight .highlight .gp {
+	color: #555555;
+}
+body.theme-midnight .highlight .gs {
+	font-weight: bold;
+}
+body.theme-midnight .highlight .gu {
+	color: #aaaaaa;
+}
+body.theme-midnight .highlight .k, body.theme-midnight .highlight .kv {
+	color: #66d9ef;
+	font-weight: bold;
+}
+body.theme-midnight .highlight .kc {
+	color: #66d9ef;
+	font-weight: bold;
+}
+body.theme-midnight .highlight .kd {
+	color: #66d9ef;
+	font-weight: bold;
+}
+body.theme-midnight .highlight .kp {
+	color: #66d9ef;
+	font-weight: bold;
+}

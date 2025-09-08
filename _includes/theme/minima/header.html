@@ -100,6 +100,56 @@
             margin-right: 16px;
         }
     </style>
+
+</head>
+
+<body>
+    
+    <script type="module" src="{{ site.baseurl }}/assets/js/api/login.js"></script>
+
+    <!-- Theme Switcher Script (moved to end of body for DOM access) -->
+    <script>
+        // Map theme names to CSS file URLs
+        const themeMap = {
+            dracula: '{{ site.baseurl }}/assets/css/theme-dracula.css',
+            midnight: '{{ site.baseurl }}/assets/css/theme-midnight.css',
+            daylight: '{{ site.baseurl }}/assets/css/theme-daylight.css',
+            sunrise: '{{ site.baseurl }}/assets/css/theme-sunrise.css'
+        };
+
+        // Add or update the theme stylesheet
+
+        function setTheme(theme) {
+            // Remove any previous theme class
+            document.body.classList.remove('theme-dracula', 'theme-midnight', 'theme-daylight', 'theme-sunrise');
+            // Add the new theme class
+            document.body.classList.add('theme-' + theme);
+            let link = document.getElementById('themeStylesheet');
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.id = 'themeStylesheet';
+                document.head.appendChild(link);
+            }
+            link.href = themeMap[theme];
+            document.head.appendChild(link);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Theme switcher script loaded');
+            const dropdown = document.getElementById('themeDropdown');
+            if (dropdown) {
+                dropdown.addEventListener('change', function() {
+                    setTheme(this.value);
+                });
+                // Set default theme
+                setTheme(dropdown.value);
+            } else {
+                console.log('Theme dropdown not found');
+            }
+        });
+    </script>
+</body>
 </head>
 
 <body>
@@ -138,6 +188,13 @@
                     {%- endif -%}
                     {%- endfor -%}
                     <a id="loginArea" href="{{ site.baseurl }}/login">Login</a>
+                        <!-- Theme Switcher Dropdown -->
+                        <select id="themeDropdown" style="margin-left: 16px; padding: 4px; border-radius: 4px; background: #222; color: #fff; border: 1px solid #888;">
+                            <option value="dracula">Dracula</option>
+                            <option value="midnight">Midnight</option>
+                            <option value="daylight">Daylight</option>
+                            <option value="sunrise">Sunrise</option>
+                        </select>
                 </div>
             </nav>
             {%- endif -%}
@@ -145,4 +202,6 @@
     </header>
 
     <script type="module" src="{{ site.baseurl }}/assets/js/api/login.js"></script>    
+    </body>
+
 </body>
