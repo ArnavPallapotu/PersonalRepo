@@ -1,10 +1,9 @@
 ---
 title: Movie Searcher (OMDb)
-description: A simple Movie Searcher web app using the OMDb API (single-file HTML you can copy and run).
+description: A simple Movie Searcher web app using the OMDb API
 comments: false
-layout: opencs
+layout: post
 permalink: /movie-searcher
-menu: nav/javascript_project.html
 ---
 
 # Movie Searcher (OMDb)
