@@ -358,7 +358,7 @@ permalink: oopadv
   class StrongBrick extends Brick {
       constructor(x, y, width = 75, height = 20) {
           super(x, y, width, height);
-          this.maxHits = 2;
+          this.maxHits = 5;
           this.hits = this.maxHits;
           this.color = "#ff6b35"; // Orange color
       }
