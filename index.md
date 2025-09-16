@@ -30,16 +30,3 @@ hide: true
 </a>
 
 <br>
-
-<script src="{{site.baseurl}}/assets/js/itunes/api.js"></script>
-
-<button onclick="runCalculation()">Calculate</button>
-<div id="result"></div>
-
-<script>
-function runCalculation() {
-    // This calls a function from your external JS file
-    const result = performCalculation();
-    document.getElementById('result').textContent = result;
-}
-</script>
