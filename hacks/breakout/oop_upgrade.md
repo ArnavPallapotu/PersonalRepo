@@ -48,6 +48,8 @@ permalink: oopadv
         <div><span style="color:#0095DD;">■</span> Basic Brick (1 hit)</div>
         <div><span style="color:#ff6b35;">■</span> Strong Brick (2 hits)</div>
         <div><span style="color:#f7931e;">■</span> Moving Brick</div>
+        <div><span style="color:#ff0000;">■</span> Explosive Brick (destroys nearby)</div>
+        <div><span style="color:#888888;">■</span> Shield Brick (becomes indestructible)</div>
         <div><span style="color:gold;">⚡</span> Speed Power-up</div>
         <div><span style="color:#ff69b4;">●</span> Multi-Ball Power-up</div>
         <div><span style="color:lime;">▲</span> Wide Paddle Power-up</div>
@@ -69,6 +71,8 @@ permalink: oopadv
             <li><strong>Brick Class (Base):</strong> Foundation class for all brick types</li>
             <li><strong>StrongBrick Class:</strong> Inherits from Brick, requires 2 hits</li>
             <li><strong>MovingBrick Class:</strong> Inherits from Brick, moves horizontally</li>
+            <li><strong>ExplosiveBrick Class:</strong> Destroys nearby bricks when hit</li>
+            <li><strong>ShieldBrick Class:</strong> Becomes indestructible after first hit</li>
             <li><strong>PowerUp Class (Enhanced):</strong> Multiple power-up types with different effects</li>
             <li><strong>Game Class:</strong> Manages arrays of objects and inheritance</li>
         </ul>
@@ -82,7 +86,7 @@ permalink: oopadv
         
         <ul style="margin:8px 0 12px 20px;">
             <li>Pick a new color for the paddle and the different brick types.</li>
-            <li>Change colors in the Ball, Paddle, BasicBrick, StrongBrick, and MovingBrick class constructors.</li>
+            <li>Change colors in the Ball, Paddle, BasicBrick, StrongBrick, MovingBrick, ExplosiveBrick, and ShieldBrick class constructors.</li>
             <li>Tip: Each brick type has its own color - experiment with different combinations!</li>
         </ul>
     </div>
@@ -94,6 +98,7 @@ permalink: oopadv
         <ul style="margin:8px 0 12px 20px;">
             <li>Change how many hits StrongBrick requires by modifying <code>this.hits</code> in the constructor.</li>
             <li>Change MovingBrick speed by modifying <code>this.speed</code>.</li>
+            <li>Adjust ExplosiveBrick's explosion radius by changing <code>this.explosionRadius</code>.</li>
             <li>Adjust the percentage of each brick type in the <code>createRandomBrick()</code> method.</li>
         </ul>
     </div>
@@ -109,11 +114,11 @@ permalink: oopadv
     </div>
 
     <div id="hack3-100" style="max-width:600px;margin:8px auto;font-family:system-ui,Arial;">
-        <p><strong>Hack #3 (100%): Create New Brick Types</strong></p>
+        <p><strong>Hack #3 (100%): Create New Brick Types ✓ COMPLETED!</strong></p>
         <ul style="margin:8px 0 12px 20px;">
-            <li><strong>Challenge:</strong> Create an <code>ExplosiveBrick</code> class that destroys nearby bricks when hit.</li>
-            <li><strong>Advanced:</strong> Make a <code>ShieldBrick</code> that becomes indestructible after being hit once.</li>
-            <li><strong>Expert:</strong> Add your new brick type to the <code>createRandomBrick()</code> method.</li>
+            <li><strong>✓ ExplosiveBrick:</strong> Red bricks that destroy nearby bricks in a radius when hit.</li>
+            <li><strong>✓ ShieldBrick:</strong> Gray bricks that become indestructible (silver) after being hit once.</li>
+            <li><strong>✓ Integration:</strong> Both new brick types are included in the <code>createRandomBrick()</code> method.</li>
         </ul>
     </div>
 
@@ -126,6 +131,7 @@ permalink: oopadv
             <li><strong>Encapsulation:</strong> Create private methods in brick classes using the # syntax.</li>
             <li><strong>Composition:</strong> Create a <code>BrickFactory</code> class to manage brick creation.</li>
             <li><strong>Array Management:</strong> Study how the game handles arrays of different object types.</li>
+            <li><strong>Special Effects:</strong> Modify ExplosiveBrick to create chain reactions or visual effects.</li>
         </ul>
     </div>
 </div>
@@ -140,6 +146,7 @@ permalink: oopadv
         <li>Learn to manage arrays containing different object types.</li>
         <li>Practice extending existing classes with new functionality.</li>
         <li>Explore how inheritance makes adding new features easier.</li>
+        <li>Study how ExplosiveBrick affects nearby objects through spatial relationships.</li>
     </ul>
     <p><a href="{{site.baseurl}}/oopadvlesson" style="text-decoration:none;color:#007acc;font-weight:bold;">Click here to read the full lesson</a></p>
 </div>
@@ -178,7 +185,7 @@ permalink: oopadv
           this.radius = radius;
           this.dx = 2;
           this.dy = -2;
-          this.color = "#0095DD";
+          this.color = "#00e6e6"; // Bright cyan for Ball
           this.active = true;
       }
       
@@ -258,7 +265,7 @@ permalink: oopadv
           this.baseWidth = 75;
           this.width = this.baseWidth;
           this.height = 10;
-          this.color = "#0095DD";
+          this.color = "#ff69b4"; // Hot pink for Paddle
           this.speed = 7;
           this.leftPressed = false;
           this.rightPressed = false;
@@ -311,7 +318,7 @@ permalink: oopadv
           this.height = height;
           this.status = 1; // 1 = active, 0 = destroyed
           this.hasPowerUp = Math.random() < 0.3; // 30% chance
-          this.color = "#0095DD";
+          this.color = "#ffd700"; // Gold for Basic Brick
       }
       
       draw(ctx) {
@@ -351,9 +358,9 @@ permalink: oopadv
   class StrongBrick extends Brick {
       constructor(x, y, width = 75, height = 20) {
           super(x, y, width, height);
-          this.maxHits = 2;
+          this.maxHits = 5;
           this.hits = this.maxHits;
-          this.color = "#ff6b35"; // Orange color
+          this.color = "#8a2be2"; // Blue-violet for Strong Brick
       }
       
       draw(ctx) {
@@ -404,9 +411,9 @@ permalink: oopadv
   class MovingBrick extends Brick {
       constructor(x, y, width = 75, height = 20) {
           super(x, y, width, height);
-          this.speed = 1;
+          this.speed = 3;
           this.direction = Math.random() > 0.5 ? 1 : -1;
-          this.color = "#f7931e"; // Different orange
+          this.color = "#00ff00"; // Neon green for Moving Brick
           this.originalX = x;
           this.moveRange = 50;
       }
@@ -425,6 +432,129 @@ permalink: oopadv
       
       getPoints() {
           return 3; // Most points for moving bricks
+      }
+  }
+
+  // ExplosiveBrick - destroys nearby bricks when hit
+  class ExplosiveBrick extends Brick {
+      constructor(x, y, width = 75, height = 20) {
+          super(x, y, width, height);
+          this.color = "#ff0000"; // Red color
+          this.explosionRadius = 80; // Adjustable explosion radius
+      }
+      
+      draw(ctx) {
+          if (this.status === 1) {
+              ctx.beginPath();
+              ctx.rect(this.x, this.y, this.width, this.height);
+              
+              // Pulsing red effect
+              const pulse = Math.sin(Date.now() * 0.01) * 0.3 + 0.7;
+              ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`;
+              
+              if (this.hasPowerUp) {
+                  ctx.shadowColor = "yellow";
+                  ctx.shadowBlur = 5;
+              }
+              
+              ctx.fill();
+              ctx.closePath();
+              ctx.shadowBlur = 0;
+              
+              // Draw explosion symbol
+              ctx.fillStyle = "white";
+              ctx.font = "bold 14px Arial";
+              ctx.textAlign = "center";
+              ctx.fillText("💥", this.x + this.width/2, this.y + this.height/2 + 4);
+          }
+      }
+      
+      hit() {
+          this.status = 0;
+          return true; // Brick is destroyed and should explode
+      }
+      
+      // Method to check if another brick is within explosion radius
+      isInExplosionRadius(otherBrick) {
+          const centerX = this.x + this.width / 2;
+          const centerY = this.y + this.height / 2;
+          const otherCenterX = otherBrick.x + otherBrick.width / 2;
+          const otherCenterY = otherBrick.y + otherBrick.height / 2;
+          
+          const distance = Math.sqrt(
+              Math.pow(centerX - otherCenterX, 2) + 
+              Math.pow(centerY - otherCenterY, 2)
+          );
+          
+          return distance <= this.explosionRadius;
+      }
+      
+      getPoints() {
+          return 5; // High points for explosive bricks
+      }
+  }
+
+  // ShieldBrick - becomes indestructible after being hit once
+  class ShieldBrick extends Brick {
+      constructor(x, y, width = 75, height = 20) {
+          super(x, y, width, height);
+          this.color = "#888888"; // Gray color initially
+          this.shielded = false;
+      }
+      
+      draw(ctx) {
+          if (this.status === 1) {
+              ctx.beginPath();
+              ctx.rect(this.x, this.y, this.width, this.height);
+              
+              if (this.shielded) {
+                  // Metallic silver color when shielded
+                  ctx.fillStyle = "#c0c0c0";
+                  
+                  // Add metallic shine effect
+                  const gradient = ctx.createLinearGradient(
+                      this.x, this.y, this.x + this.width, this.y + this.height
+                  );
+                  gradient.addColorStop(0, "#e0e0e0");
+                  gradient.addColorStop(0.5, "#c0c0c0");
+                  gradient.addColorStop(1, "#a0a0a0");
+                  ctx.fillStyle = gradient;
+              } else {
+                  ctx.fillStyle = this.color;
+              }
+              
+              if (this.hasPowerUp && !this.shielded) {
+                  ctx.shadowColor = "yellow";
+                  ctx.shadowBlur = 5;
+              }
+              
+              ctx.fill();
+              ctx.closePath();
+              ctx.shadowBlur = 0;
+              
+              // Draw shield symbol when shielded
+              if (this.shielded) {
+                  ctx.fillStyle = "white";
+                  ctx.font = "bold 12px Arial";
+                  ctx.textAlign = "center";
+                  ctx.fillText("🛡", this.x + this.width/2, this.y + this.height/2 + 4);
+              }
+          }
+      }
+      
+      hit() {
+          if (!this.shielded) {
+              this.shielded = true;
+              this.hasPowerUp = false; // Lose power-up when becoming shielded
+              return false; // Brick survives and becomes indestructible
+          } else {
+              // Shielded bricks cannot be destroyed
+              return false;
+          }
+      }
+      
+      getPoints() {
+          return this.shielded ? 0 : 2; // Points only on first hit
       }
   }
 
@@ -517,9 +647,9 @@ permalink: oopadv
           this.activePowerUps = new Set();
           this.powerUpTimers = {};
           this.powerUpDurations = {
-              wide: 5000,
-              speed: 3000,
-              multiball: 1000 // Short duration just for activation
+              wide: 7000, // Wide paddle lasts 7 seconds
+              speed: 5000, // Speed lasts 5 seconds
+              multiball: 1500 // Multi-ball lasts 1.5 seconds (activation only)
           };
           
           // Brick configuration
@@ -533,22 +663,26 @@ permalink: oopadv
           this.initBricks();
       }
       
-      // Factory method for creating random brick types
+      // Factory method for creating random brick types - now includes ExplosiveBrick and ShieldBrick
       createRandomBrick(x, y) {
           const random = Math.random();
-          if (random < 0.6) {
+          if (random < 0.4) {
               return new Brick(x, y);
-          } else if (random < 0.85) {
+          } else if (random < 0.65) {
               return new StrongBrick(x, y);
-          } else {
+          } else if (random < 0.8) {
               return new MovingBrick(x, y);
+          } else if (random < 0.9) {
+              return new ExplosiveBrick(x, y);
+          } else {
+              return new ShieldBrick(x, y);
           }
       }
       
       // Get random power-up type
       getRandomPowerUpType() {
           const types = ["wide", "speed", "multiball"];
-          const probabilities = [0.4, 0.3, 0.3]; // Adjust these probabilities
+          const probabilities = [0.3, 0.5, 0.2]; // Adjust these probabilities
           
           const random = Math.random();
           let cumulative = 0;
@@ -668,6 +802,38 @@ permalink: oopadv
           this.gameLoop();
       }
       
+      // Handle explosion effects from ExplosiveBrick
+      handleExplosion(explosiveBrick) {
+          let destroyedBricks = 0;
+          
+          for (let brick of this.bricks) {
+              if (brick !== explosiveBrick && brick.isActive() && explosiveBrick.isInExplosionRadius(brick)) {
+                  // Only regular bricks and strong bricks can be destroyed by explosion
+                  // Shield bricks and moving bricks are resistant to explosions
+                  if (brick instanceof Brick && !(brick instanceof ShieldBrick) && !(brick instanceof MovingBrick)) {
+                      brick.status = 0;
+                      this.score += Math.floor(brick.getPoints() / 2); // Half points for explosion damage
+                      destroyedBricks++;
+                      
+                      // Chain explosion if another explosive brick is destroyed
+                      if (brick instanceof ExplosiveBrick) {
+                          setTimeout(() => this.handleExplosion(brick), 100);
+                      }
+                  } else if (brick instanceof StrongBrick) {
+                      // Strong bricks lose one hit from explosion
+                      brick.hits = Math.max(0, brick.hits - 1);
+                      if (brick.hits <= 0) {
+                          brick.status = 0;
+                          this.score += Math.floor(brick.getPoints() / 2);
+                          destroyedBricks++;
+                      }
+                  }
+              }
+          }
+          
+          return destroyedBricks;
+      }
+      
       collisionDetection() {
           for (let ball of this.balls) {
               if (!ball.active) continue;
@@ -680,9 +846,21 @@ permalink: oopadv
                       if (destroyed) {
                           this.score += brick.getPoints();
                           
+                          // Handle explosion for ExplosiveBrick
+                          if (brick instanceof ExplosiveBrick) {
+                              const explosionDestroyedCount = this.handleExplosion(brick);
+                              this.score += explosionDestroyedCount * 2; // Bonus points for explosion
+                          }
+                          
                           if (brick.hasPowerUp) {
                               const powerUpType = this.getRandomPowerUpType();
                               this.powerUps.push(new PowerUp(brick.x + brick.width / 2, brick.y, powerUpType));
+                          }
+                      } else {
+                          // Brick was hit but not destroyed (StrongBrick or ShieldBrick)
+                          if (brick instanceof ShieldBrick && brick.shielded) {
+                              // Add some points for hitting a shielded brick
+                              this.score += 1;
                           }
                       }
                       break; // Only hit one brick per ball per frame
@@ -726,11 +904,14 @@ permalink: oopadv
                   ball.speedUp(0.7); // Slow down for "speed" power-up
               }
           } else if (type === "multiball") {
-              // Add 2 extra balls
-              for (let i = 0; i < 2; i++) {
-                  const newBall = new Ball(this.balls[0].x, this.balls[0].y);
-                  const angle = (Math.PI / 4) * (i + 1);
-                  const speed = Math.hypot(this.balls[0].dx, this.balls[0].dy);
+              // Configurable number of extra balls
+              const extraBalls = 3; // Change this value for more/less balls
+              for (let i = 0; i < extraBalls; i++) {
+                  const baseBall = this.balls[0];
+                  const newBall = new Ball(baseBall.x, baseBall.y);
+                  // Spread angles for each ball
+                  const angle = (Math.PI / 6) + (i * Math.PI / (3 * extraBalls));
+                  const speed = Math.hypot(baseBall.dx, baseBall.dy);
                   newBall.dx = speed * Math.cos(angle) * (Math.random() > 0.5 ? 1 : -1);
                   newBall.dy = -speed * Math.sin(angle);
                   this.balls.push(newBall);
@@ -750,8 +931,14 @@ permalink: oopadv
       }
       
       checkWinCondition() {
-          const activeBricks = this.bricks.filter(brick => brick.isActive()).length;
-          if (activeBricks === 0) {
+          // Count only destructible bricks (exclude shielded ShieldBricks)
+          const destructibleBricks = this.bricks.filter(brick => {
+              if (!brick.isActive()) return false;
+              if (brick instanceof ShieldBrick && brick.shielded) return false;
+              return true;
+          }).length;
+          
+          if (destructibleBricks === 0) {
               this.paused = true;
               document.getElementById("nextLevelBtn").style.display = "block";
               return true;
