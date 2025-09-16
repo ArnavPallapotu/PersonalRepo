@@ -223,7 +223,7 @@ permalink: oopbreakoutgame
           this.baseWidth = 75;
           this.width = this.baseWidth;
           this.height = 10;
-          this.color = "#0095DD";
+          this.color = "#dd0000ff";
           this.speed = 7;
           this.leftPressed = false;
           this.rightPressed = false;
@@ -275,7 +275,7 @@ permalink: oopbreakoutgame
           this.height = height;
           this.status = 1; // 1 = active, 0 = destroyed
           this.hasPowerUp = Math.random() < 0.3; // 30% chance
-          this.color = this.hasPowerUp ? "gold" : "#0095DD";
+          this.color = this.hasPowerUp ? "purple" : "#00dd1aff";
       }
       
       draw(ctx) {
