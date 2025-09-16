@@ -411,7 +411,7 @@ permalink: oopadv
   class MovingBrick extends Brick {
       constructor(x, y, width = 75, height = 20) {
           super(x, y, width, height);
-          this.speed = 1;
+          this.speed = 3;
           this.direction = Math.random() > 0.5 ? 1 : -1;
           this.color = "#f7931e"; // Different orange
           this.originalX = x;
