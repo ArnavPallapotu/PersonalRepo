@@ -185,7 +185,7 @@ permalink: oopadv
           this.radius = radius;
           this.dx = 2;
           this.dy = -2;
-          this.color = "#0095DD";
+          this.color = "#00e6e6"; // Bright cyan for Ball
           this.active = true;
       }
       
@@ -265,7 +265,7 @@ permalink: oopadv
           this.baseWidth = 75;
           this.width = this.baseWidth;
           this.height = 10;
-          this.color = "#0095DD";
+          this.color = "#ff69b4"; // Hot pink for Paddle
           this.speed = 7;
           this.leftPressed = false;
           this.rightPressed = false;
@@ -318,7 +318,7 @@ permalink: oopadv
           this.height = height;
           this.status = 1; // 1 = active, 0 = destroyed
           this.hasPowerUp = Math.random() < 0.3; // 30% chance
-          this.color = "#0095DD";
+          this.color = "#ffd700"; // Gold for Basic Brick
       }
       
       draw(ctx) {
@@ -360,7 +360,7 @@ permalink: oopadv
           super(x, y, width, height);
           this.maxHits = 5;
           this.hits = this.maxHits;
-          this.color = "#ff6b35"; // Orange color
+          this.color = "#8a2be2"; // Blue-violet for Strong Brick
       }
       
       draw(ctx) {
@@ -413,7 +413,7 @@ permalink: oopadv
           super(x, y, width, height);
           this.speed = 3;
           this.direction = Math.random() > 0.5 ? 1 : -1;
-          this.color = "#f7931e"; // Different orange
+          this.color = "#00ff00"; // Neon green for Moving Brick
           this.originalX = x;
           this.moveRange = 50;
       }
@@ -647,9 +647,9 @@ permalink: oopadv
           this.activePowerUps = new Set();
           this.powerUpTimers = {};
           this.powerUpDurations = {
-              wide: 5000,
-              speed: 3000,
-              multiball: 1000 // Short duration just for activation
+              wide: 7000, // Wide paddle lasts 7 seconds
+              speed: 5000, // Speed lasts 5 seconds
+              multiball: 1500 // Multi-ball lasts 1.5 seconds (activation only)
           };
           
           // Brick configuration
@@ -682,7 +682,7 @@ permalink: oopadv
       // Get random power-up type
       getRandomPowerUpType() {
           const types = ["wide", "speed", "multiball"];
-          const probabilities = [0.4, 0.3, 0.3]; // Adjust these probabilities
+          const probabilities = [0.3, 0.5, 0.2]; // Adjust these probabilities
           
           const random = Math.random();
           let cumulative = 0;
@@ -904,11 +904,14 @@ permalink: oopadv
                   ball.speedUp(0.7); // Slow down for "speed" power-up
               }
           } else if (type === "multiball") {
-              // Add 2 extra balls
-              for (let i = 0; i < 2; i++) {
-                  const newBall = new Ball(this.balls[0].x, this.balls[0].y);
-                  const angle = (Math.PI / 4) * (i + 1);
-                  const speed = Math.hypot(this.balls[0].dx, this.balls[0].dy);
+              // Configurable number of extra balls
+              const extraBalls = 3; // Change this value for more/less balls
+              for (let i = 0; i < extraBalls; i++) {
+                  const baseBall = this.balls[0];
+                  const newBall = new Ball(baseBall.x, baseBall.y);
+                  // Spread angles for each ball
+                  const angle = (Math.PI / 6) + (i * Math.PI / (3 * extraBalls));
+                  const speed = Math.hypot(baseBall.dx, baseBall.dy);
                   newBall.dx = speed * Math.cos(angle) * (Math.random() > 0.5 ? 1 : -1);
                   newBall.dy = -speed * Math.sin(angle);
                   this.balls.push(newBall);
