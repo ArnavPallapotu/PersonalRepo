@@ -4,7 +4,6 @@ description: API's are a primary source for obtaining data from the internet.  T
 permalink: /music-api
 ---
 
-
 <!-- Input box and button for filter -->
 <div>
   <input type="text" id="filterInput" placeholder="Enter iTunes filter">
@@ -31,40 +30,160 @@ permalink: /music-api
   </tbody>
 </table>
 
-
-
 <script type="module">
   import { Requestor } from '{{site.baseurl}}/assets/js/itunes/api.js';
   import { Handler } from '{{site.baseurl}}/assets/js/itunes/handler.js';
 
-    const API_URL = "https://itunes.apple.com";
-    const requestor = new Requestor(API_URL);
+  const API_URL = "https://itunes.apple.com";
+  const requestor = new Requestor(API_URL);
+  const handler = new Handler();
 
-    async function runTests() {
-        try {
-            console.log("=== Test basic search ===");
-            const result1 = await requestor.search({ term: 'jack johnson', limit: 10 });
-            console.log("Basic search results:", result1);
+  const resultContainer = document.getElementById("result");
+  const suggestionsContainer = document.getElementById("suggestions");
+  const recentSearchesContainer = document.getElementById("recentSearches");
 
-            console.log("=== Test music specific search ===");
-            const result2 = await requestor.searchMusic('taylor swift', { entity: 'album', limit: 5 });
-            console.log("Music search results:", result2);
+  const staticSuggestions = [
+    "Taylor Swift", "Drake", "The Beatles", 
+    "Eminem", "Billie Eilish", "Coldplay", 
+    "Kanye West", "Ariana Grande", "Ed Sheeran"
+  ];
 
-            console.log("=== Test advanced search ===");
-            const result3 = await requestor.search({
-                term: 'star wars',
-                media: 'movie',
-                country: 'US',
-                limit: 25,
-                explicit: 'No'
-            });
-            console.log("Advanced search results:", result3);
-        } catch (error) {
-            console.error('Test failed:', error);
-        }
+  // return suggestions that match the query (or all when query is empty)
+  function getSuggestions(query) {
+    if (!query) return staticSuggestions.slice();
+    const q = query.toLowerCase();
+    return staticSuggestions.filter(s => s.toLowerCase().includes(q));
+  }
+
+  // render all suggestion chips (initial view)
+  function renderAllSuggestions() {
+    suggestionsContainer.innerHTML = '';
+    for (const s of staticSuggestions) {
+      const btn = document.createElement('button');
+      btn.innerText = s;
+      btn.style.marginRight = '6px';
+      btn.style.marginBottom = '6px';
+      btn.className = 'suggest-chip';
+      btn.onclick = () => {
+        document.getElementById('filterInput').value = s;
+        fetchDataWithSave(s);
+        suggestionsContainer.innerHTML = '';
+      };
+      suggestionsContainer.appendChild(btn);
     }
+  }
 
-    runTests();
+  // Show suggestions under input
+  function showSuggestions(query) {
+    suggestionsContainer.innerHTML = "";
+    const matches = getSuggestions(query);
+    if (!matches.length) return;
+    for (const match of matches) {
+      const btn = document.createElement("button");
+      btn.innerText = match;
+      btn.style.marginRight = "5px";
+      btn.onclick = () => {
+        document.getElementById("filterInput").value = match;
+        fetchDataWithSave(match);
+        suggestionsContainer.innerHTML = "";
+      };
+      suggestionsContainer.appendChild(btn);
+    }
+  }
+  document.getElementById("filterInput").addEventListener("input", (e) => {
+    showSuggestions(e.target.value);
+  });
+
+  // recent searches storage
+  const RECENT_KEY = 'music_api_recent_searches';
+  function loadRecentSearches() {
+    try {
+      const raw = localStorage.getItem(RECENT_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw);
+    } catch (e) { return []; }
+  }
+  function saveRecentSearch(term) {
+    if (!term) return;
+    const list = loadRecentSearches();
+    const normalized = term.trim();
+    // dedupe
+    const idx = list.findIndex(x => x.toLowerCase() === normalized.toLowerCase());
+    if (idx !== -1) list.splice(idx, 1);
+    list.unshift(normalized);
+    // limit history
+    while (list.length > 10) list.pop();
+    try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) { console.warn('Unable to save recent searches', e); }
+    renderRecentSearches();
+  }
+  function renderRecentSearches() {
+    if (!recentSearchesContainer) return;
+    recentSearchesContainer.innerHTML = '';
+    const list = loadRecentSearches();
+    if (!list.length) return;
+    const title = document.createElement('div');
+    title.innerText = 'Recent searches:';
+    title.style.marginBottom = '6px';
+    recentSearchesContainer.appendChild(title);
+    for (const s of list) {
+      const btn = document.createElement('button');
+      btn.innerText = s;
+      btn.style.marginRight = '6px';
+      btn.style.marginBottom = '6px';
+      btn.onclick = () => fetchDataWithSave(s);
+      recentSearchesContainer.appendChild(btn);
+    }
+    const clr = document.createElement('button');
+    clr.innerText = 'Clear';
+    clr.style.marginLeft = '8px';
+    clr.onclick = () => { localStorage.removeItem(RECENT_KEY); renderRecentSearches(); };
+    recentSearchesContainer.appendChild(clr);
+  }
+
+  // wrapper that saves search term then delegates
+  async function fetchDataWithSave(term) {
+    const t = (term || document.getElementById('filterInput').value || '').trim();
+    if (!t) return;
+    saveRecentSearch(t);
+    try {
+      const results = await requestor.search({ term: t, limit: 20 });
+      handler.render(results, resultContainer);
+    } catch (e) {
+      console.error("Search failed", e);
+    }
+  }
+
+  // render chips & recent on initial load
+  document.addEventListener('DOMContentLoaded', () => { renderAllSuggestions(); renderRecentSearches(); });
+
+  // allow Enter to trigger saved search
+  document.getElementById('filterInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchDataWithSave(); });
+
+  // tests
+  runTests();
+  async function runTests() {
+    try {
+      console.log("=== Test basic search ===");
+      const result1 = await requestor.search({ term: 'jack johnson', limit: 10 });
+      console.log("Basic search results:", result1);
+
+      console.log("=== Test music specific search ===");
+      const result2 = await requestor.searchMusic('taylor swift', { entity: 'album', limit: 5 });
+      console.log("Music search results:", result2);
+
+      console.log("=== Test advanced search ===");
+      const result3 = await requestor.search({
+        term: 'star wars',
+        media: 'movie',
+        country: 'US',
+        limit: 25,
+        explicit: 'No'
+      });
+      console.log("Advanced search results:", result3);
+    } catch (error) {
+      console.error('Test failed:', error);
+    }
+  }
 </script>
 
 ## Hacks
