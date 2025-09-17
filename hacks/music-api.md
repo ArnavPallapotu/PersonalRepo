@@ -36,7 +36,8 @@ permalink: /music-api
 
   const API_URL = "https://itunes.apple.com";
   const requestor = new Requestor(API_URL);
-  const handler = new Handler();
+  // Handler expects the id of the container it will render into
+  const handler = new Handler("result");
 
   const resultContainer = document.getElementById("result");
   const suggestionsContainer = document.getElementById("suggestions");
@@ -147,9 +148,32 @@ permalink: /music-api
     saveRecentSearch(t);
     try {
       const results = await requestor.search({ term: t, limit: 20 });
-      handler.render(results, resultContainer);
+      // Use Handler's API to render results (we don't modify handler.js)
+      handler.clearResults();
+      handler.handleResponse(results);
+
+      // Post-process created rows to link title to iTunes (trackViewUrl or collectionViewUrl)
+      try {
+        const rows = resultContainer.querySelectorAll('tr');
+        results.results.forEach((item, idx) => {
+          const tr = rows[idx];
+          if (!tr) return;
+          const titleCell = tr.children[1]; // handler renders: artist, title, image, preview
+          if (!titleCell) return;
+          const href = item.trackViewUrl || item.collectionViewUrl || '';
+          const text = titleCell.textContent || item.trackName || item.collectionName || '';
+          if (href) {
+            titleCell.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+          }
+        });
+      } catch (err) {
+        // ignore post-processing errors but log for debugging
+        console.warn('Post-process linking failed', err);
+      }
+
     } catch (e) {
       console.error("Search failed", e);
+      handler.handleError(e);
     }
   }
 
