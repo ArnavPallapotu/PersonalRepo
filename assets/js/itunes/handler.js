@@ -64,6 +64,8 @@ class Handler {
     }
 }
 
+export { Handler };
+
 // Usage example:
 // const handler = new Handler("result");
 // function fetchData() {
