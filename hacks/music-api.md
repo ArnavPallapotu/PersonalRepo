@@ -8,8 +8,13 @@ permalink: /music-api
 <!-- Input box and button for filter -->
 <div>
   <input type="text" id="filterInput" placeholder="Enter iTunes filter">
-  <button onclick="fetchData()">Search</button>
+  <button onclick="fetchDataWithSave()">Search</button>
 </div>
+
+<!-- Suggestions will appear here -->
+<div id="suggestions" style="margin: 10px 0;"></div>
+<!-- Recent searches will appear here -->
+<div id="recentSearches" style="margin: 10px 0;"></div>
 
 <!-- HTML table fragment for page -->
 <table>
@@ -26,139 +31,40 @@ permalink: /music-api
   </tbody>
 </table>
 
-<!-- Script is laid out in a sequence (no function) and will execute when the page is loaded
-<script>
-  // prepare HTML result container for new output
-  const resultContainer = document.getElementById("result");
 
-  // function to fetch data based on user input
-  function fetchData() {
-    // clear previous results
-    resultContainer.innerHTML = "";
-
-    // get user input
-    const filterInput = document.getElementById("filterInput");
-    const filter = filterInput.value;
-
-    // prepare fetch options
-    const url = "https://itunes.apple.com/search?term=" + encodeURIComponent(filter);
-    const headers = {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'default',
-      credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    };
-
-    // fetch the API
-    fetch(url, headers)
-      .then(response => {
-        // check for response errors
-        if (response.status !== 200) {
-          const errorMsg = 'Database response error: ' + response.status;
-          console.log(errorMsg);
-          const tr = document.createElement("tr");
-          const td = document.createElement("td");
-          td.innerHTML = errorMsg;
-          tr.appendChild(td);
-          resultContainer.appendChild(tr);
-          return;
-        }
-        // valid response will have JSON data
-        response.json().then(data => {
-          console.log(data);
-
-          // Music data
-        for (const row of data.results) {
-            console.log(row);
-
-            // tr for each row
-            const tr = document.createElement("tr");
-            // td for each column
-            const artist = document.createElement("td");
-            const track = document.createElement("td");
-            const image = document.createElement("td");
-            const preview = document.createElement("td");
-
-            // data is specific to the API
-            artist.innerHTML = row.artistName;
-            track.innerHTML = row.trackName; 
-            // create preview image
-            const img = document.createElement("img");
-            img.src = row.artworkUrl100;
-            image.appendChild(img);
-            // create preview player
-            const audio = document.createElement("audio");
-            audio.controls = true;
-            const source = document.createElement("source");
-            source.src = row.previewUrl;
-            source.type = "audio/mp4";
-            audio.appendChild(source);
-            preview.appendChild(audio);
-
-            // this builds td's into tr
-            tr.appendChild(artist);
-            tr.appendChild(track);
-            tr.appendChild(image);
-            tr.appendChild(preview);
-
-            // add HTML to container
-            resultContainer.appendChild(tr);
-          }
-        })
-      })
-      .catch(err => {
-        console.error(err);
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.innerHTML = err;
-        tr.appendChild(td);
-        resultContainer.appendChild(tr);
-      });
-  }
-</script> -->
 
 <script type="module">
   import { Requestor } from '{{site.baseurl}}/assets/js/itunes/api.js';
   import { Handler } from '{{site.baseurl}}/assets/js/itunes/handler.js';
 
-  const API_URL = "https://itunes.apple.com";
-  const requestor = new Requestor(API_URL);
-  // Handler will render results into the <tbody id="result">
-  const handler = new Handler("result");
+    const API_URL = "https://itunes.apple.com";
+    const requestor = new Requestor(API_URL);
 
-  // debounce helper to avoid too many API calls while typing
-  function debounce(fn, wait = 300) {
-    let t;
-    return (...args) => {
-      clearTimeout(t);
-      t = setTimeout(() => fn(...args), wait);
-    };
-  }
+    async function runTests() {
+        try {
+            console.log("=== Test basic search ===");
+            const result1 = await requestor.search({ term: 'jack johnson', limit: 10 });
+            console.log("Basic search results:", result1);
 
-  async function queryAndDisplay(term) {
-    handler.clearResults();
-    if (!term || term.trim().length === 0) return; // don't query empty
-    try {
-      const data = await requestor.searchMusic(term, { entity: "musicTrack", limit: 10 });
-      handler.handleResponse(data);
-    } catch (err) {
-      handler.handleError(err);
+            console.log("=== Test music specific search ===");
+            const result2 = await requestor.searchMusic('taylor swift', { entity: 'album', limit: 5 });
+            console.log("Music search results:", result2);
+
+            console.log("=== Test advanced search ===");
+            const result3 = await requestor.search({
+                term: 'star wars',
+                media: 'movie',
+                country: 'US',
+                limit: 25,
+                explicit: 'No'
+            });
+            console.log("Advanced search results:", result3);
+        } catch (error) {
+            console.error('Test failed:', error);
+        }
     }
-  }
 
-  const debouncedQuery = debounce((ev) => {
-    const term = ev.target.value;
-    queryAndDisplay(term);
-  }, 300);
-
-  // wire input event so typing shows results
-  const inputEl = document.getElementById("filterInput");
-  if (inputEl) {
-    inputEl.addEventListener("input", debouncedQuery);
-  }
+    runTests();
 </script>
 
 ## Hacks
