@@ -1,5 +1,3 @@
-const API_URL = "https://itunes.apple.com"
-
 class Requestor {
     constructor(api_url) {
         this.api_url = api_url;
