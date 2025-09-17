@@ -8,11 +8,13 @@ permalink: /music-api
 <!-- Input box and button for filter -->
 <div>
   <input type="text" id="filterInput" placeholder="Enter iTunes filter">
-  <button onclick="fetchData()">Search</button>
+  <button onclick="fetchDataWithSave()">Search</button>
 </div>
 
 <!-- Suggestions will appear here -->
 <div id="suggestions" style="margin: 10px 0;"></div>
+<!-- Recent searches will appear here -->
+<div id="recentSearches" style="margin: 10px 0;"></div>
 
 <!-- HTML table fragment for page -->
 <table>
@@ -65,8 +67,9 @@ permalink: /music-api
         btn.className = 'suggest-chip';
         btn.onclick = () => {
           document.getElementById('filterInput').value = s;
-          // call fetchData if defined
-          if (typeof fetchData === 'function') fetchData(s);
+          // prefer wrapper that saves recent searches
+          if (typeof fetchDataWithSave === 'function') fetchDataWithSave(s);
+          else if (typeof fetchData === 'function') fetchData(s);
           suggestionsContainer.innerHTML = '';
         };
         suggestionsContainer.appendChild(btn);
@@ -108,7 +111,8 @@ permalink: /music-api
         btn.style.marginRight = "5px";
         btn.onclick = () => {
           document.getElementById("filterInput").value = match;
-          fetchData(match);
+          if (typeof fetchDataWithSave === 'function') fetchDataWithSave(match);
+          else if (typeof fetchData === 'function') fetchData(match);
           suggestionsContainer.innerHTML = "";
         };
         suggestionsContainer.appendChild(btn);
@@ -119,8 +123,69 @@ permalink: /music-api
     });
     runTests();
 
-    // render chips on initial load
-    document.addEventListener('DOMContentLoaded', renderAllSuggestions);
+    // recent searches storage
+    const RECENT_KEY = 'music_api_recent_searches';
+    function loadRecentSearches() {
+      try {
+        const raw = localStorage.getItem(RECENT_KEY);
+        if (!raw) return [];
+        return JSON.parse(raw);
+      } catch (e) { return []; }
+    }
+    function saveRecentSearch(term) {
+      if (!term) return;
+      const list = loadRecentSearches();
+      const normalized = term.trim();
+      // dedupe
+      const idx = list.findIndex(x => x.toLowerCase() === normalized.toLowerCase());
+      if (idx !== -1) list.splice(idx, 1);
+      list.unshift(normalized);
+      // limit history
+      while (list.length > 10) list.pop();
+      try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) { console.warn('Unable to save recent searches', e); }
+      renderRecentSearches();
+    }
+    function renderRecentSearches() {
+      if (!recentSearchesContainer) return;
+      recentSearchesContainer.innerHTML = '';
+      const list = loadRecentSearches();
+      if (!list.length) return;
+      const title = document.createElement('div');
+      title.innerText = 'Recent searches:';
+      title.style.marginBottom = '6px';
+      recentSearchesContainer.appendChild(title);
+      for (const s of list) {
+        const btn = document.createElement('button');
+        btn.innerText = s;
+        btn.style.marginRight = '6px';
+        btn.style.marginBottom = '6px';
+        btn.onclick = () => fetchDataWithSave(s);
+        recentSearchesContainer.appendChild(btn);
+      }
+      const clr = document.createElement('button');
+      clr.innerText = 'Clear';
+      clr.style.marginLeft = '8px';
+      clr.onclick = () => { localStorage.removeItem(RECENT_KEY); renderRecentSearches(); };
+      recentSearchesContainer.appendChild(clr);
+    }
+
+    // wrapper that saves search term then delegates
+    function fetchDataWithSave(term) {
+      const t = (term || document.getElementById('filterInput').value || '').trim();
+      if (!t) return;
+      saveRecentSearch(t);
+      if (typeof fetchData === 'function') return fetchData(t);
+      // fallback: use requestor if available
+      if (requestor && typeof requestor.search === 'function') {
+        requestor.search({ term: t, limit: 20 }).then(r => console.log('search result', r)).catch(e => console.error(e));
+      }
+    }
+
+    // render chips & recent on initial load
+    document.addEventListener('DOMContentLoaded', () => { renderAllSuggestions(); renderRecentSearches(); });
+
+    // allow Enter to trigger saved search
+    document.getElementById('filterInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchDataWithSave(); });
 </script>
 
 ## Hacks
