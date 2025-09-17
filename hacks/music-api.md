@@ -121,36 +121,44 @@ permalink: /music-api
 </script> -->
 
 <script type="module">
-    import { Requestor } from '{{site.baseurl}}/assets/js/itunes/api.js';
+  import { Requestor } from '{{site.baseurl}}/assets/js/itunes/api.js';
+  import { Handler } from '{{site.baseurl}}/assets/js/itunes/handler.js';
 
-    const API_URL = "https://itunes.apple.com";
-    const requestor = new Requestor(API_URL);
+  const API_URL = "https://itunes.apple.com";
+  const requestor = new Requestor(API_URL);
+  // Handler will render results into the <tbody id="result">
+  const handler = new Handler("result");
 
-    async function runTests() {
-        try {
-            console.log("=== Test basic search ===");
-            const result1 = await requestor.search({ term: 'jack johnson', limit: 10 });
-            console.log("Basic search results:", result1);
+  // debounce helper to avoid too many API calls while typing
+  function debounce(fn, wait = 300) {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), wait);
+    };
+  }
 
-            console.log("=== Test music specific search ===");
-            const result2 = await requestor.searchMusic('taylor swift', { entity: 'album', limit: 5 });
-            console.log("Music search results:", result2);
-
-            console.log("=== Test advanced search ===");
-            const result3 = await requestor.search({
-                term: 'star wars',
-                media: 'movie',
-                country: 'US',
-                limit: 25,
-                explicit: 'No'
-            });
-            console.log("Advanced search results:", result3);
-        } catch (error) {
-            console.error('Test failed:', error);
-        }
+  async function queryAndDisplay(term) {
+    handler.clearResults();
+    if (!term || term.trim().length === 0) return; // don't query empty
+    try {
+      const data = await requestor.searchMusic(term, { entity: "musicTrack", limit: 10 });
+      handler.handleResponse(data);
+    } catch (err) {
+      handler.handleError(err);
     }
+  }
 
-    runTests();
+  const debouncedQuery = debounce((ev) => {
+    const term = ev.target.value;
+    queryAndDisplay(term);
+  }, 300);
+
+  // wire input event so typing shows results
+  const inputEl = document.getElementById("filterInput");
+  if (inputEl) {
+    inputEl.addEventListener("input", debouncedQuery);
+  }
 </script>
 
 ## Hacks
