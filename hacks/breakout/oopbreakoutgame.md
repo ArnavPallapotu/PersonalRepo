@@ -223,7 +223,7 @@ permalink: oopbreakoutgame
           this.baseWidth = 75;
           this.width = this.baseWidth;
           this.height = 10;
-          this.color = "#dd0000ff";
+          this.color = "#0095DD";
           this.speed = 7;
           this.leftPressed = false;
           this.rightPressed = false;
@@ -267,46 +267,144 @@ permalink: oopbreakoutgame
       }
   }
 
-  // Brick class - individual brick with power-up capability
   class Brick extends GameObject {
-      constructor(x, y, width = 75, height = 20) {
+      
+      constructor(x, y, width = 75, height = 20, hits = 1) {
           super(x, y);
           this.width = width;
           this.height = height;
-          this.status = 1; // 1 = active, 0 = destroyed
+          this._hits = hits; // remaining hits (encapsulated)
+          this.maxHits = hits;
           this.hasPowerUp = Math.random() < 0.3; // 30% chance
-          this.color = this.hasPowerUp ? "purple" : "#00dd1aff";
+          this._baseColor = "#0095DD";
       }
-      
+
+      // Private helper to compute fill style depending on remaining hits
+      #fillStyle() {
+          if (this.hasPowerUp) return "gold";
+          // lighter color when partially damaged
+          if (this._hits < this.maxHits) return "#7fb3ff";
+          return this._baseColor;
+      }
+
+      // Public draw - subclasses may override for unique visuals (inheritance)
       draw(ctx) {
-          if (this.status === 1) {
-              ctx.beginPath();
-              ctx.rect(this.x, this.y, this.width, this.height);
-              
-              if (this.hasPowerUp) {
-                  ctx.fillStyle = this.color;
-                  ctx.shadowColor = "orange";
-                  ctx.shadowBlur = 10;
-              } else {
-                  ctx.fillStyle = this.color;
-                  ctx.shadowBlur = 0;
-              }
-              
-              ctx.fill();
-              ctx.closePath();
+          if (!this.isActive()) return;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(this.x, this.y, this.width, this.height);
+
+          // use private method for style
+          ctx.fillStyle = this.#fillStyle();
+          ctx.shadowBlur = this.hasPowerUp ? 10 : 0;
+          ctx.shadowColor = this.hasPowerUp ? "orange" : "transparent";
+          ctx.fill();
+          ctx.closePath();
+          ctx.restore();
+      }
+
+      // Called when the ball hits this brick. Returns true if brick was destroyed by this hit.
+      hit() {
+          this._hits -= 1;
+          if (this._hits <= 0) {
+              this.destroy();
+              return true;
           }
+          return false;
       }
-      
+
       destroy() {
-          this.status = 0;
+          this._hits = 0;
       }
-      
+
       isActive() {
-          return this.status === 1;
+          return this._hits > 0;
+      }
+
+      // Polymorphic points value for this brick type
+      getPoints() {
+          return 1; 
+      }
+
+      
+      update(canvasWidth) {
+          // base brick stationary
       }
   }
 
-  // PowerUp class - falling power-ups with effects
+  // StrongBrick: requires two hits and overrides drawing & points
+  class StrongBrick extends Brick {
+      constructor(x, y, width = 75, height = 20) {
+          super(x, y, width, height, 2);
+          this._baseColor = "#ff6b35"; // stronger color
+      }
+
+      // Use a private helper to draw damage stripes
+      #drawStripes(ctx) {
+          const stripeCount = 3;
+          ctx.save();
+          ctx.globalAlpha = 0.15;
+          ctx.fillStyle = "black";
+          for (let i = 0; i < stripeCount; i++) {
+              const sx = this.x + (i / stripeCount) * this.width;
+              ctx.fillRect(sx, this.y, this.width / (stripeCount * 2), this.height);
+          }
+          ctx.restore();
+      }
+
+      draw(ctx) {
+          if (!this.isActive()) return;
+          // base rectangle
+          super.draw(ctx);
+          // additional stripes to indicate strength
+          this.#drawStripes(ctx);
+      }
+
+      getPoints() {
+          return 2;
+      }
+  }
+
+  
+  class MovingBrick extends Brick {
+      constructor(x, y, width = 75, height = 20) {
+          super(x, y, width, height, 1);
+          this._baseColor = "#f7931e";
+          this.dx = 1.2 * (Math.random() < 0.5 ? 1 : -1);
+          this.minX = x - 40;
+          this.maxX = x + 40;
+      }
+
+      update(canvasWidth) {
+          this.x += this.dx;
+          if (this.x < this.minX || this.x + this.width > this.maxX) {
+              this.dx = -this.dx;
+          }
+      }
+
+      draw(ctx) {
+          super.draw(ctx);
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.2)";
+          ctx.strokeRect(this.x + 2, this.y + 2, this.width - 4, this.height - 4);
+          ctx.restore();
+      }
+
+      getPoints() {
+          return 3;
+      }
+  }
+
+  class BrickFactory {
+      static createRandomBrick(x, y) {
+          const roll = Math.random();
+          if (roll < 0.6) return new Brick(x, y);
+          if (roll < 0.85) return new StrongBrick(x, y);
+          return new MovingBrick(x, y);
+      }
+  }
+
   class PowerUp extends GameObject {
       constructor(x, y) {
           super(x, y);
@@ -331,7 +429,7 @@ permalink: oopbreakoutgame
               ctx.fill();
               ctx.closePath();
               
-              // Draw "P" text
+              
               ctx.fillStyle = "black";
               ctx.font = "bold 14px Arial";
               ctx.textAlign = "center";
@@ -363,7 +461,7 @@ permalink: oopbreakoutgame
       }
   }
 
-  // Main Game class - controls game state and orchestrates everything
+  
   class Game {
       constructor(canvasId) {
           this.canvas = document.getElementById(canvasId);
@@ -437,10 +535,11 @@ permalink: oopbreakoutgame
               for (let r = 0; r < this.brickRows; r++) {
                   const x = c * (75 + this.brickPadding) + this.brickOffsetLeft;
                   const y = r * (20 + this.brickPadding) + this.brickOffsetTop;
-                  this.bricks.push(new Brick(x, y));
-              }
-          }
-      }
+                  // use factory to create a mix of brick types
+                  this.bricks.push(BrickFactory.createRandomBrick(x, y));
+               }
+           }
+       }
       
       start() {
           this.gameRunning = true;
@@ -504,11 +603,16 @@ permalink: oopbreakoutgame
           for (let brick of this.bricks) {
               if (brick.isActive() && this.ball.collidesWith(brick)) {
                   this.ball.dy = -this.ball.dy;
-                  brick.destroy();
-                  this.score++;
-                  
-                  if (brick.hasPowerUp) {
-                      this.powerUps.push(new PowerUp(brick.x + brick.width / 2, brick.y));
+                  // call polymorphic hit() which may require multiple hits
+                  const destroyed = brick.hit();
+
+                  // increase score using polymorphic getPoints() only when destroyed
+                  if (destroyed) {
+                      this.score += brick.getPoints();
+
+                      if (brick.hasPowerUp) {
+                          this.powerUps.push(new PowerUp(brick.x + brick.width / 2, brick.y));
+                      }
                   }
               }
           }
@@ -618,6 +722,14 @@ permalink: oopbreakoutgame
           this.ball.update(this.width, this.height);
           this.paddle.update();
           this.updatePowerUps();
+
+          // update moving bricks (others no-op)
+          for (let brick of this.bricks) {
+              if (brick.isActive()) {
+                  brick.update(this.width);
+              }
+          }
+
           this.collisionDetection();
           this.checkBallCollision();
           
@@ -628,7 +740,7 @@ permalink: oopbreakoutgame
           // Clear canvas
           this.ctx.clearRect(0, 0, this.width, this.height);
           
-          // Draw all game objects
+          // Draw all game objects (polymorphic draw)
           for (let brick of this.bricks) {
               brick.draw(this.ctx);
           }
