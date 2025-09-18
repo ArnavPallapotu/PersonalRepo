@@ -1,13 +1,14 @@
 ---
 title: JS Itunes API
-description: API's are a primary source for obtaining data from the internet.  There is imformation in API's for almost any interest.
+description: API's are a primary source for obtaining data from the internet. There is imformation in API's for almost any interest.
 permalink: /music-api
 ---
 
 <!-- Input box and button for filter -->
 <div>
   <input type="text" id="filterInput" placeholder="Enter iTunes filter">
-  <button onclick="fetchDataWithSave()">Search</button>
+  <label style="margin-left:8px; font-weight:normal;"><input type="checkbox" id="genrePop"> Pop?</label>
+  <button id="searchBtn">Search</button>
 </div>
 
 <!-- Suggestions will appear here -->
@@ -23,6 +24,7 @@ permalink: /music-api
       <th>Track</th>
       <th>Images</th>
       <th>Preview</th>
+      <th>Popularity Rank</th>
     </tr>
   </thead>
   <tbody id="result">
@@ -36,12 +38,11 @@ permalink: /music-api
 
   const API_URL = "https://itunes.apple.com";
   const requestor = new Requestor(API_URL);
-  // Handler expects the id of the container it will render into
-  const handler = new Handler("result");
-
-  const resultContainer = document.getElementById("result");
-  const suggestionsContainer = document.getElementById("suggestions");
-  const recentSearchesContainer = document.getElementById("recentSearches");
+  // handler and DOM containers will be initialized once the DOM is ready
+  let handler = null;
+  let resultContainer = null;
+  let suggestionsContainer = null;
+  let recentSearchesContainer = null;
 
   const staticSuggestions = [
     "Taylor Swift", "Drake", "The Beatles", 
@@ -49,14 +50,12 @@ permalink: /music-api
     "Kanye West", "Ariana Grande", "Ed Sheeran"
   ];
 
-  // return suggestions that match the query (or all when query is empty)
   function getSuggestions(query) {
     if (!query) return staticSuggestions.slice();
     const q = query.toLowerCase();
     return staticSuggestions.filter(s => s.toLowerCase().includes(q));
   }
 
-  // render all suggestion chips (initial view)
   function renderAllSuggestions() {
     suggestionsContainer.innerHTML = '';
     for (const s of staticSuggestions) {
@@ -74,7 +73,6 @@ permalink: /music-api
     }
   }
 
-  // Show suggestions under input
   function showSuggestions(query) {
     suggestionsContainer.innerHTML = "";
     const matches = getSuggestions(query);
@@ -91,11 +89,9 @@ permalink: /music-api
       suggestionsContainer.appendChild(btn);
     }
   }
-  document.getElementById("filterInput").addEventListener("input", (e) => {
-    showSuggestions(e.target.value);
-  });
 
-  // recent searches storage
+  // suggestion input handler will be attached after DOM is ready
+
   const RECENT_KEY = 'music_api_recent_searches';
   function loadRecentSearches() {
     try {
@@ -104,19 +100,19 @@ permalink: /music-api
       return JSON.parse(raw);
     } catch (e) { return []; }
   }
+
   function saveRecentSearch(term) {
     if (!term) return;
     const list = loadRecentSearches();
     const normalized = term.trim();
-    // dedupe
     const idx = list.findIndex(x => x.toLowerCase() === normalized.toLowerCase());
     if (idx !== -1) list.splice(idx, 1);
     list.unshift(normalized);
-    // limit history
     while (list.length > 10) list.pop();
     try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch (e) { console.warn('Unable to save recent searches', e); }
     renderRecentSearches();
   }
+
   function renderRecentSearches() {
     if (!recentSearchesContainer) return;
     recentSearchesContainer.innerHTML = '';
@@ -141,34 +137,54 @@ permalink: /music-api
     recentSearchesContainer.appendChild(clr);
   }
 
-  // wrapper that saves search term then delegates
   async function fetchDataWithSave(term) {
     const t = (term || document.getElementById('filterInput').value || '').trim();
     if (!t) return;
     saveRecentSearch(t);
     try {
-      const results = await requestor.search({ term: t, limit: 20 });
-      // Use Handler's API to render results (we don't modify handler.js)
+      // include genreId=14 when "Pop?" checkbox is checked
+      const genrePopEl = document.getElementById('genrePop');
+      const opts = { term: t, limit: 20 };
+      if (genrePopEl && genrePopEl.checked) opts.genreId = 14;
+      const results = await requestor.search(opts);
       handler.clearResults();
       handler.handleResponse(results);
 
-      // Post-process created rows to link title to iTunes (trackViewUrl or collectionViewUrl)
-      try {
+      // Defensive post-processing: ensure results exist and are an array
+      if (results && Array.isArray(results.results)) {
         const rows = resultContainer.querySelectorAll('tr');
         results.results.forEach((item, idx) => {
           const tr = rows[idx];
           if (!tr) return;
-          const titleCell = tr.children[1]; // handler renders: artist, title, image, preview
-          if (!titleCell) return;
-          const href = item.trackViewUrl || item.collectionViewUrl || '';
-          const text = titleCell.textContent || item.trackName || item.collectionName || '';
-          if (href) {
-            titleCell.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+
+          // Make track name clickable (safe DOM creation)
+          const titleCell = tr.children[1];
+          if (titleCell) {
+            const href = item.trackViewUrl || item.collectionViewUrl || '';
+            const text = (titleCell.textContent && titleCell.textContent.trim()) || item.trackName || item.collectionName || '';
+            if (href) {
+              // clear existing content and append an anchor
+              titleCell.textContent = '';
+              const a = document.createElement('a');
+              a.href = href;
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+              a.textContent = text;
+              titleCell.appendChild(a);
+            }
           }
+
+          // Add popularity rank column safely
+          let rankCell = tr.children[4];
+          if (!rankCell) {
+            rankCell = document.createElement('td');
+            tr.appendChild(rankCell);
+          }
+          rankCell.textContent = String(idx + 1);
         });
-      } catch (err) {
-        // ignore post-processing errors but log for debugging
-        console.warn('Post-process linking failed', err);
+      } else {
+        // no results to post-process
+        console.warn('No results returned to post-process linking.');
       }
 
     } catch (e) {
@@ -177,44 +193,45 @@ permalink: /music-api
     }
   }
 
-  // render chips & recent on initial load
-  document.addEventListener('DOMContentLoaded', () => { renderAllSuggestions(); renderRecentSearches(); });
+  document.addEventListener('DOMContentLoaded', () => { 
+    // Now that DOM is ready, wire up elements and handler
+    resultContainer = document.getElementById("result");
+    suggestionsContainer = document.getElementById("suggestions");
+    recentSearchesContainer = document.getElementById("recentSearches");
 
-  // allow Enter to trigger saved search
-  document.getElementById('filterInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchDataWithSave(); });
-
-  // tests
-  runTests();
-  async function runTests() {
+    // instantiate handler with the id of the container
     try {
-      console.log("=== Test basic search ===");
-      const result1 = await requestor.search({ term: 'jack johnson', limit: 10 });
-      console.log("Basic search results:", result1);
-
-      console.log("=== Test music specific search ===");
-      const result2 = await requestor.searchMusic('taylor swift', { entity: 'album', limit: 5 });
-      console.log("Music search results:", result2);
-
-      console.log("=== Test advanced search ===");
-      const result3 = await requestor.search({
-        term: 'star wars',
-        media: 'movie',
-        country: 'US',
-        limit: 25,
-        explicit: 'No'
-      });
-      console.log("Advanced search results:", result3);
-    } catch (error) {
-      console.error('Test failed:', error);
+      handler = new Handler("result");
+    } catch (e) {
+      console.warn('Handler could not be instantiated on load', e);
     }
-  }
+
+    // render static suggestions and recent searches
+    renderAllSuggestions(); 
+    renderRecentSearches(); 
+
+    // input -> show suggestions as user types
+    const filterInputEl = document.getElementById("filterInput");
+    if (filterInputEl) {
+      filterInputEl.addEventListener("input", (e) => {
+        showSuggestions(e.target.value);
+      });
+      // Enter key triggers search
+      filterInputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') fetchDataWithSave(); });
+    }
+
+    // Search button event listener
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) searchBtn.addEventListener('click', () => { fetchDataWithSave(); });
+  });
+
 </script>
 
 ## Hacks
 
 The endpoint itunes.apple.com allows requests and they provide responses with their data.   Our formatting of the response provides the Input and Output interaction with the itunes data.  
 
-We do not create or manage their data.  The itunes system has  backend processes that create and store data.  
+We do not create or manage their data.  The itunes system has backend processes that create and store data.  
 
 In this type of Website relationship we itunes could provide.
 
@@ -227,3 +244,5 @@ But, we would need backend help from itunes to..
 - Show most popular queries.
 - Show songs by genre.
 - Show songs by era.
+
+```
